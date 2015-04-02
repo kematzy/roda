@@ -7,9 +7,7 @@ rescue LoadError
 else
 describe "chunked plugin" do 
   def cbody(env={})
-    b = ''
-    req({'HTTP_VERSION'=>'HTTP/1.1'}.merge(env))[2].each{|s| b << s}
-    b
+    body({'HTTP_VERSION'=>'HTTP/1.1'}.merge(env))
   end
 
   it "streams templates in chunked encoding only if HTTP 1.1 is used" do
@@ -40,6 +38,26 @@ describe "chunked plugin" do
 
     cbody.should == "2\r\nmh\r\n1\r\nt\r\n0\r\n\r\n"
     body.should == "hmht"
+  end
+
+  it "has delay accept block that is called after layout yielding but before content when streaming" do
+    app(:chunked) do |r|
+      delay do
+        @h << 'i'
+      end
+      @h = 'h'
+      chunked(:inline=>'m<%= @h %>', :layout=>{:inline=>'<%= @h %><%= yield %>t'}) do
+        @h << 'j'
+      end
+    end
+
+    cbody.should == "1\r\nh\r\n4\r\nmhij\r\n1\r\nt\r\n0\r\n\r\n"
+    body.should == "hijmhijt"
+  end
+
+  it "has delay raise if not given a block" do
+    app(:chunked){|r| delay}
+    proc{body}.should raise_error(Roda::RodaError)
   end
 
   it "works when a layout is not used" do

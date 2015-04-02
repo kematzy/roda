@@ -20,7 +20,7 @@ class Roda
     module DefaultHeaders
       # Merge the given headers into the existing default headers, if any.
       def self.configure(app, headers={})
-        app.opts[:default_headers] = (app.opts[:default_headers] || {}).merge(headers).freeze
+        app.opts[:default_headers] = (app.default_headers || app::RodaResponse::DEFAULT_HEADERS).merge(headers).freeze
       end 
 
       module ClassMethods

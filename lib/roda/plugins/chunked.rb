@@ -37,6 +37,23 @@ class Roda
     #     end
     #   end
     #
+    # You can also call delay manually with a block, and the execution of the
+    # block will be delayed until rendering the content template.  This is
+    # useful if you want to delay execution for all routes under a branch:
+    #
+    #   r.on 'albums/:d' do |album_id|
+    #     delay do
+    #       @album = Album[album_id]
+    #     end
+    #     r.get 'info' do
+    #       chunked(:info)
+    #     end
+    #     r.get 'tracks' do
+    #       chunked(:tracks)
+    #     end
+    #   end
+    #
+    #
     # If you want to chunk all responses, pass the :chunk_by_default option
     # when loading the plugin:
     #
@@ -192,15 +209,19 @@ class Roda
         end
 
         # Render a response to the user in chunks.  See Chunked for
-        # an overview.
+        # an overview.  If a block is given, it is passed to #delay.
         def chunked(template, opts=OPTS, &block)
           unless defined?(@_chunked)
             @_chunked = env[HTTP_VERSION] == HTTP11
           end
 
+          if block
+            delay(&block)
+          end
+
           unless @_chunked
             # If chunking is disabled, do a normal rendering of the view.
-            yield if block
+            run_delayed_blocks
             return view(template, opts)
           end
 
@@ -214,7 +235,7 @@ class Roda
           
           # Hack so that the arguments don't need to be passed
           # through the response and body objects.
-          @_each_chunk_args = [template, opts, block]
+          @_each_chunk_args = [template, opts]
 
           res = response
           headers = res.headers
@@ -226,11 +247,18 @@ class Roda
           throw :halt, res.finish_with_body(Body.new(self))
         end
 
+        # Delay the execution of the block until right before the
+        # content template is to be rendered.
+        def delay(&block)
+          raise RodaError, "must pass a block to Roda#delay" unless block
+          (@_delays ||= []) << block
+        end
+
         # Yield each chunk of the template rendering separately.
         def each_chunk
           response.body.each{|s| yield s}
 
-          template, opts, block = @_each_chunk_args
+          template, opts = @_each_chunk_args
 
           # Use a lambda for the flusher, so that a call to flush
           # by a template can result in this method yielding a chunk
@@ -243,12 +271,12 @@ class Roda
           if layout_opts  = view_layout_opts(opts)
             @_out_buf = render_template(layout_opts) do
               flush
-              block.call if block
+              run_delayed_blocks
               yield opts[:content] || render_template(template, opts)
               nil
             end
           else
-            yield if block
+            run_delayed_blocks
             yield view(template, opts)
           end
 
@@ -267,6 +295,14 @@ class Roda
         # things if chunking is not used.
         def flush
           @_flusher.call if @_flusher
+        end
+        
+        private
+
+        # Run all delayed blocks
+        def run_delayed_blocks
+          return unless @_delays
+          @_delays.each(&:call)
         end
       end
     end

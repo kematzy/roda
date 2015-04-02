@@ -119,7 +119,7 @@ class Roda
         def close
           return if closed?
           @closed = true
-          @scheduler.schedule{@callbacks.each{|c| c.call}}
+          @scheduler.schedule{@callbacks.each(&:call)}
         end
 
         # Whether the connection has already been closed.

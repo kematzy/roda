@@ -1,5 +1,11 @@
 = HEAD
 
+* Add shared_vars plugin, for sharing variables between multiple Roda apps (jeremyevans)
+
+* Add delay method to chunked plugin, for delaying a block execution until right before content template rendering (jeremyevans)
+
+* Have default Content-Type header when using the default_headers plugin (jeremyevans)
+
 * Add :by_name option to the path plugin, for registering classes by name, useful when reloading code (jeremyevans)
 
 * Add Roda.path_block to get the block related to the given class used for Road#path (jeremyevans)

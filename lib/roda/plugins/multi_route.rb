@@ -133,7 +133,7 @@ class Roda
         # Freeze the namespaced routes so that there can be no thread safety issues at runtime.
         def freeze
           opts[:namespaced_routes].freeze
-          opts[:namespaced_routes].each_value{|v| v.freeze}
+          opts[:namespaced_routes].each_value(&:freeze)
           super
         end
 
