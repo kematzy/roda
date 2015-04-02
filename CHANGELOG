@@ -1,5 +1,7 @@
 = HEAD
 
+* Split partials method from padrino_render plugin into partials plugin (kematzy) (#19)
+
 * Add shared_vars plugin, for sharing variables between multiple Roda apps (jeremyevans)
 
 * Add delay method to chunked plugin, for delaying a block execution until right before content template rendering (jeremyevans)

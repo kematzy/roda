@@ -5,15 +5,12 @@ class Roda
     # 
     #   plugin :partials, :views => 'path/2/views'
     # 
-    # Note, this plugin automatically loads the :render plugin.
-    # 
-    # 
     # Template files are prefixed with an underscore:
     #
     #   partial('test')     # uses _test.erb
     #   partial('dir/test') # uses dir/_test.erb
     #
-    # 
+    # Note that this plugin automatically loads the :render plugin.
     module Partials
       OPTS = {}.freeze
       SLASH = '/'.freeze

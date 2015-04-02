@@ -8,8 +8,6 @@ class Roda
     # 
     #   plugin :padrino_render, :views => 'path/2/views'
     # 
-    # Note! This plugin loads the :partials and :render plugins
-    #
     # Most notably, this makes the +render+ method default to
     # using the layout, similar to how the +view+ method works
     # in the render plugin.  If you want to call render and not
@@ -19,17 +17,9 @@ class Roda
     #   render('test')                 # layout
     #   render('test', :layout=>false) # no layout
     #
-    # This also adds a +partial+ method, which renders templates
-    # without the layout, but prefixes the template filename to
-    # use with an underscore:
-    #
-    #   partial('test')     # uses _test.erb
-    #   partial('dir/test') # uses dir/_test.erb
-    #
-    # 
+    # Note that this plugin loads the :partials plugin.
     module PadrinoRender
       OPTS = {}.freeze
-      SLASH = '/'.freeze
 
       # Depend on the render plugin, since this overrides
       # some of its methods.
@@ -43,7 +33,6 @@ class Roda
         def render(template, opts=OPTS)
           view(template, opts)
         end
-
       end
     end
 
